@@ -19,6 +19,23 @@
 #   system_message=                   prompt=
 #   llm_config=LLMConfig({...})       config=OpenAIConfig(model=...)
 #   functions=[get_weather]           tools=[get_weather]
+#   Annotated[str, "City name"]       Annotated[str, Field(description="City name")]
+#
+# That last row is the one nobody would predict, and it is the SECOND
+# independent reason the starter does not run. Verified 2026-09-07 against
+# ag2 1.0.4:
+#
+#   Annotated[str, "City name to get weather for"]
+#     -> SyntaxError: Forward reference must be an expression
+#        -- got 'City name to get weather for'
+#
+#   Annotated[str, Field(description="City name")]   -> accepted
+#
+# ag2 1.0 routes tool signatures through `fast_depends`, which treats a bare
+# string in `Annotated` as a forward reference and tries to compile it. So
+# fixing the starter's two `autogen` imports is not enough: it fails again on
+# the very next thing, in a way whose error message names neither the tool nor
+# the annotation. See FINDINGS.md finding 1.
 #
 # Everything else — the Open-Meteo lookup, the WMO code table, the response
 # shape, the CORS block, `app.mount("/chat", ...)`, port 8008 — is the starter's,
@@ -34,6 +51,7 @@ from typing import Annotated
 import httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import Field
 
 from ag2 import Agent
 from ag2.ag_ui import AGUIStream
@@ -73,7 +91,7 @@ def get_weather_condition(code: int) -> str:
 
 
 async def get_weather(
-    location: Annotated[str, "City name to get weather for"],
+    location: Annotated[str, Field(description="City name to get weather for")],
 ) -> dict[str, str | float]:
     """Get current weather for a location using the Open-Meteo API."""
     async with httpx.AsyncClient(timeout=20.0) as client:

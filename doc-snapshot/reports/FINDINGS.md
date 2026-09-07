@@ -3,7 +3,8 @@
 **Doc root** <https://docs.ag2.ai/docs/user-guide/ag-ui/>
 **Snapshot taken** 2026-09-07 · 4 pages · `doc-snapshot/pages/`
 **Assignment said** ✅ Fully Working
-**This run says** ⚠️ **The four pages are accurate. The runnable starter one of them links to is not.**
+**This run says** ⚠️ **The four pages are accurate. The runnable starter one of them links to is broken in two independent ways.**
+**Recordings** 4 clips, `autorecorder/videos/AG2-ext-*.webm` — recorded 2026-09-07 against `ag2` 1.0.4
 
 ## Versions pinned
 
@@ -126,6 +127,40 @@ The docs moved to the 1.0 API and the starter did not follow. `backend/weather_b
 in this repo is that port, done line by line, and its header lists every change —
 it is the size of the gap, made concrete.
 
+### And it is broken a second time, after the imports
+
+**Executed 2026-09-07, not inferred.** Fixing the two `autogen` imports is not
+enough. The starter annotates its tool parameter the AG2 0.x way:
+
+```python
+async def get_weather(
+    location: Annotated[str, "City name to get weather for"],
+) -> dict[str, str | float]:
+```
+
+Under `ag2` 1.0.4 that raises before the agent is built:
+
+```
+SyntaxError: Forward reference must be an expression
+  -- got 'City name to get weather for'
+```
+
+ag2 1.0 routes tool signatures through `fast_depends`, which treats a bare
+string inside `Annotated` as a forward reference and tries to compile it. The
+1.0 form is a pydantic `Field`:
+
+```python
+    location: Annotated[str, Field(description="City name to get weather for")],   # accepted
+```
+
+Both were run side by side in the installed environment; the first raises, the
+second is accepted. So a reader who works out the `autogen` → `ag2` rename hits
+a second, less guessable failure immediately afterwards — and its message names
+neither the tool nor the annotation.
+
+`backend/weather_backend.py` in this repo is the starter with both fixes
+applied, and its header lists every line that had to change.
+
 ### Why this matters more than a stale link usually would
 
 The Quickstart's other tab is `npx copilotkit@latest create -f ag2`, which
@@ -136,9 +171,15 @@ the starter and the docs are on different major versions.
 
 ### Ask
 
-Update `ag2ai/ag2-copilotkit-starter` to the 1.0 API, and pin `ag2>=1.0` in its
-`requirements.txt` so the next divergence fails loudly at install rather than
-quietly at import. Until then, note the version skew on the Quickstart page.
+Update `ag2ai/ag2-copilotkit-starter` to the 1.0 API — the imports **and** the
+`Annotated` form — and pin `ag2>=1.0` in its `requirements.txt` so the next
+divergence fails loudly at install rather than quietly at import. Until then,
+note the version skew on the Quickstart page.
+
+A shorter fix for the docs alone: the AG-UI pages publish no tool example at
+all, so there is nowhere on docs.ag2.ai that shows the 1.0 annotation form. Ten
+lines on the Backend deep dive page would give readers something correct to copy
+instead of the starter.
 
 ---
 

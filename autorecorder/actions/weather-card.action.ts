@@ -27,8 +27,18 @@ import { sendPrompt, waitForAgentResponseCompletion } from '../core/actions';
  * rendering: ensure tool/action names match exactly").
  */
 
-/** Text the card always paints, whatever the weather is. */
-const CARD_MARKERS = ['Current Weather', 'Fetching weather...', 'Humidity', 'Feels Like'];
+/**
+ * Text the card always paints, whatever the weather is.
+ *
+ * Matched case-INSENSITIVELY, and that is not defensive coding — it is
+ * required. The published `WeatherCard` styles these labels with Tailwind's
+ * `uppercase`, and `innerText` returns text as *rendered*, so the DOM says
+ * "Current Weather" while `innerText` says "CURRENT WEATHER". A case-sensitive
+ * check reported "no card rendered" on three runs where the card was plainly
+ * on screen in the video — which is precisely the false finding this suite
+ * exists to avoid.
+ */
+const CARD_MARKERS = ['Current Weather', 'Fetching weather', 'Humidity', 'Feels Like'];
 
 export const runWeatherCardAction: PageActionHandler = async (
   page: Page,
@@ -42,7 +52,14 @@ export const runWeatherCardAction: PageActionHandler = async (
   // The card mounts in its loading state as soon as the tool call starts, so it
   // is usually on screen well before the reply finishes. Resting the cursor on
   // it while it is still pulsing is the shot worth having.
-  const card = page.locator('text=Current Weather, text=Fetching weather...').first();
+  //
+  // `text=A, text=B` is NOT an OR — the comma is part of the `text=` argument,
+  // so it searches for the literal string "Current Weather, text=Fetching
+  // weather...". Playwright's OR is `,` between *CSS* selectors or the
+  // `:has-text()` pseudo-class. Use the latter, since these are text matches.
+  const card = page
+    .locator('div:has-text("Current Weather"), div:has-text("Fetching weather")')
+    .last();
   await card.waitFor({ state: 'visible', timeout: 25_000 }).catch(() => {});
   await sleep(1200);
 
@@ -58,8 +75,8 @@ export const runWeatherCardAction: PageActionHandler = async (
   await waitForAgentResponseCompletion(page, config.waitAfterPromptMs ?? 6000, msgCount);
 
   // Did the card mount, or did the agent just talk about the weather?
-  const body = await page.locator('body').innerText().catch(() => '');
-  const seen = CARD_MARKERS.filter((m) => body.includes(m));
+  const body = (await page.locator('body').innerText().catch(() => '')).toLowerCase();
+  const seen = CARD_MARKERS.filter((m) => body.includes(m.toLowerCase()));
 
   if (seen.length >= 2) {
     console.log(`   ✅ [WeatherCard] Rendered — matched ${seen.join(', ')}.`);
@@ -69,11 +86,27 @@ export const runWeatherCardAction: PageActionHandler = async (
         `complete state — the tool call probably never returned a result.`,
     );
   } else {
+    // Quote what the agent actually said. "No card rendered" on its own cannot
+    // distinguish "the model answered from memory and never called the tool"
+    // from "the tool ran and the renderer did not mount" — and those are a
+    // model problem and a documentation problem respectively.
+    const reply = await page
+      .locator('.copilotKitAssistantMessage')
+      .last()
+      .innerText()
+      .catch(() => '');
+    const soundsLikeWeather = /\d+(\.\d+)?\s*°|humidity|wind/i.test(reply);
+
     ctx.warn(
-      `[WeatherCard] No weather card rendered. The reply streamed, but nothing matched ` +
-        `${CARD_MARKERS.join(' / ')}. Either the agent answered in prose without calling ` +
-        `get_weather, or the action name does not match the backend tool — the page's own ` +
-        `Troubleshooting section names that second case.`,
+      `[WeatherCard] No weather card rendered; nothing matched ${CARD_MARKERS.join(' / ')}. ` +
+        (soundsLikeWeather
+          ? `But the reply carries real weather data ("${reply.slice(0, 90).replace(/\n/g, ' ')}…"), ` +
+            `so get_weather DID run and the useCopilotAction renderer did not mount — check that ` +
+            `the action name matches the backend tool, which the page's own Troubleshooting ` +
+            `section names as the likely cause.`
+          : `The reply has no weather figures in it either ("${reply.slice(0, 90).replace(/\n/g, ' ')}…"), ` +
+            `so the agent probably answered in prose without calling get_weather at all — a model ` +
+            `choice, not a documentation defect.`),
     );
   }
 };
