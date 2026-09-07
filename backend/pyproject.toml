@@ -1,0 +1,32 @@
+[project]
+name = "ag2-agui-doc-harness"
+version = "0.1.0"
+description = "Verbatim implementations of the AG-UI snippets from docs.ag2.ai"
+requires-python = ">=3.10"
+
+# What the doc pages tell you to install:
+#
+#   docs.ag2.ai/docs/user-guide/ag-ui/     pip install "ag2[ag-ui,openai]"
+#
+# The two extras are not optional for these samples: `ag-ui` is what provides
+# `ag2.ag_ui` (without it the import raises a named error telling you to add it),
+# and `openai` is what provides `ag2.config.OpenAIConfig`.
+#
+# Pinned to >=1.0 on purpose. The starter this repo vendors as evidence
+# (`starter-backend.py`) declares `ag2[openai,ag-ui]` unbounded and imports the
+# 0.x `autogen` namespace, so it installs happily and then fails at import --
+# which is finding 1. Pinning here is what that file should have done.
+dependencies = [
+    "ag2[ag-ui,openai]>=1.0",
+    "fastapi",
+    "uvicorn",
+    "httpx",
+    "python-dotenv",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+bypass-selection = true
