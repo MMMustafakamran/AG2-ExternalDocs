@@ -86,7 +86,7 @@ agent = ConversableAgent(
         "You are a helpful weather assistant. You can check the weather for any city "
         "using the get_weather tool. Be concise and friendly in your responses."
     ),
-    llm_config=LLMConfig({"model": "gpt-4o-mini", "stream": True}),
+    llm_config=LLMConfig({"model": "gpt-5.6-luna", "stream": True}),
     functions=[get_weather],
 )
 

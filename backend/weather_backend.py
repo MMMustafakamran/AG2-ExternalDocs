@@ -136,7 +136,7 @@ agent = Agent(
         "You are a helpful weather assistant. You can check the weather for any city "
         "using the get_weather tool. Be concise and friendly in your responses."
     ),
-    config=OpenAIConfig(model=os.getenv("OPENAI_MODEL", "gpt-4o-mini")),
+    config=OpenAIConfig(model=os.getenv("OPENAI_MODEL", "gpt-5.6-luna")),
     tools=[get_weather],
 )
 
