@@ -14,6 +14,6 @@
     "record:doctor": "npm --prefix autorecorder run doctor",
     "record:doctor:online": "npm --prefix autorecorder run doctor:online",
     "ci:pages": "node ci/list-pages.mjs",
-    "agent": "cd backend && uv run python weather_backend.py"
+    "agent": "cd backend && uv run --env-file ../.env python weather_backend.py"
   }
 }

@@ -11,6 +11,7 @@
 | Package | Docs declare | Resolved 2026-09-07 | Note |
 |---|---|---|---|
 | `ag2` | `pip install "ag2[ag-ui,openai]"` (unpinned) | **1.0.4** | `ag-ui` extra exists |
+| `ag2` | the same unpinned line, run today | **1.0.5** (released 2026-09-11) | both findings below still reproduce — see re-verification |
 | `@copilotkit/react-core` / `react-ui` / `runtime` | unpinned in the page | 1.70.1 | v1 surface, matching the page |
 | `@ag-ui/client` | unpinned in the page | 0.0.59 | `HttpAgent` |
 
@@ -22,9 +23,37 @@
 |---|---|---|
 | 1 | [CopilotKit Quickstart](#1--the-linked-reference-starter-does-not-import-under-ag2-104) | ❌ **Issue** — the linked starter is broken |
 | 2 | [CopilotKit Quickstart](#2--the-page-publishes-a-frontend-whose-backend-tool-is-not-published-anywhere) | 💡 Suggestion |
+| 3 | [CopilotKit Quickstart](#3--the-published-route-handler-is-the-deprecated-v1-sdk-and-404s-on-every-page-load) | 💡 Suggestion — deprecated v1 runtime, `/info` 404 (new, 2026-09-14) |
 | — | AG-UI (index) | ✅ Working — every published name verified |
 | — | Backend deep dive | ✅ Working |
 | — | Channels | ✅ Accurate, not runnable here (needs Slack credentials) |
+
+---
+
+## Re-verification — 2026-09-14, against `ag2` 1.0.5
+
+`ag2` 1.0.5 was released 2026-09-11, four days after this report. The starter's
+`requirements.txt` is still unpinned, so a reader following the Quickstart today
+gets 1.0.5 and not the 1.0.4 both findings were proven on. Both still reproduce,
+in a throwaway venv holding nothing but `ag2[openai,ag-ui]==1.0.5`:
+
+```
+import autogen
+  -> ModuleNotFoundError: No module named 'autogen'          (finding 1, unchanged)
+
+Agent(..., tools=[get_weather])  with the starter's
+location: Annotated[str, "City name to get weather for"]
+  -> SyntaxError: Forward reference must be an expression
+     -- got 'City name to get weather for'                    (finding 2, unchanged)
+
+the same tool with Annotated[str, Field(description="City name")]
+  -> accepted                                                 (the port in weather_backend.py still holds)
+```
+
+The four documented pages were re-fetched the same day and are unchanged: every
+code block and heading on all four matches `doc-snapshot/pages/` exactly.
+`docs.ag2.ai` publishes no markdown endpoint, so that comparison is made on the
+rendered page — see `ci/check-doc-drift.mjs`.
 
 ---
 
@@ -210,6 +239,52 @@ bug: the code is correct, the prerequisite is unstated.
 Either publish the ten-line `get_weather` tool beside the component, or state
 the field contract the card expects. One short block on the Quickstart page
 closes it.
+
+---
+
+## 3 · The published route handler is the deprecated v1 SDK, and 404s on every page load
+
+**Suggestion. Found on 2026-09-14 by running the page's own code**, not by
+reading it — it shows up only in the browser console of the finished app.
+
+Section "3) Connect CopilotKit runtime to the AG-UI endpoint" publishes a
+`route.ts` that exports **`POST` only**. With the versions its own unpinned
+install line resolves to today (`@copilotkit/react-core` 1.70.1), the client
+issues a `GET` the page never wires:
+
+```
+GET /api/copilotkit/info  ->  404      (once per page load, every documented route)
+```
+
+`@copilotkit/core@1.70.1` requests `` `${runtimeUrl}/info` `` — grep
+`node_modules/@copilotkit/core/dist/index.mjs`. The 404 is **not fatal**: chat,
+tool calls and the weather card all work, and all four recordings pass with it
+in the console. It is noise a reader cannot explain from anything on the page.
+
+Underneath it is the larger version fact. Every runtime symbol the page
+publishes is deprecated:
+
+| Symbol published by the page | Status in `@copilotkit/runtime` 1.70.1 |
+|---|---|
+| `CopilotRuntime` | `@deprecated Since 1.68.2. The v1 SDK is deprecated. Use v2 instead.` |
+| `ExperimentalEmptyAdapter` | same |
+| `copilotRuntimeNextJSAppRouterEndpoint` | same |
+
+The page's install path is `npx copilotkit@latest create -f ag2`, so a reader
+gets 1.70.1 and a v1 example. And the page *has* a **"Version and compatibility
+notes"** section — whose entire content is one bullet pointing at the starter
+repo, with no version named in it.
+
+None of this breaks the quickstart. It means the page documents a surface its
+own dependency has labelled superseded for two minor versions, under a heading
+that promises to say so.
+
+### Ask
+
+Name a version in "Version and compatibility notes" — which CopilotKit release
+the snippets were written against — and say whether the v1 runtime or
+`@copilotkit/runtime/v2` is the intended surface for an AG-UI agent. If v1 is
+intended, one line about the `/info` 404 saves every reader the same detour.
 
 ---
 
