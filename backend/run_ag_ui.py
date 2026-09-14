@@ -20,7 +20,7 @@ from ag2.config import OpenAIConfig
 agent = Agent(
     name="support_bot",
     prompt="You help users with billing questions.",
-    config=OpenAIConfig(model="gpt-5.6-luna"),
+    config=OpenAIConfig(model="gpt-5.4-mini"),
 )
 
 stream = AGUIStream(agent)
