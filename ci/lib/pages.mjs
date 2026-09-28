@@ -29,18 +29,12 @@ const PAGES_CONFIG = path.join(RECORDER_DIR, 'config', 'pages.config.ts');
  * the dispatch form.
  */
 export const PAGE_GROUPS = {
-  getting_started: ['quickstart', 'prebuilt-components'],
-  custom_look: ['slots', 'headless-ui', 'programmatic-control', 'inspector'],
-  generative_ui: ['display-only', 'interactive', 'tool-rendering', 'state-rendering'],
-  app_control: [
-    'frontend-tools',
-    'in-app-agent-read',
-    'in-app-agent-write',
-    'readables',
-    'auth',
-  ],
-  threads: ['threads-drawer', 'threads-headless', 'threads-lifecycle'],
-  backend: ['copilot-runtime', 'ag-ui'],
+  // One group per page: the AG-UI section is four pages, so each gets its own
+  // dispatch checkbox rather than being bundled.
+  ag_ui: ['ag-ui'],
+  copilotkit_quickstart: ['copilotkit-quickstart'],
+  backend_deepdive: ['backend-deepdive'],
+  channels: ['channels'],
 };
 
 export function readPageIds() {

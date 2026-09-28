@@ -328,7 +328,10 @@ async function main() {
       console.log('\n▶ [Step] Backend already running; reusing it.');
     } else {
       console.log('\n▶ [Step] Starting Backend Server...');
-      const backend = spawnServer('uv run --prerelease=allow main.py', BACKEND_DIR, 'backend.log');
+      // weather_backend.py, the same process `npm run agent` starts. The .env
+      // loaded above is inherited, so no --env-file is needed here (and CI has
+      // no .env file, only secrets in the environment).
+      const backend = spawnServer('uv run python weather_backend.py', BACKEND_DIR, 'backend.log');
       backendProc = backend.proc;
       backendLog = backend.logPath;
     }
