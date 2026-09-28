@@ -1,0 +1,33 @@
+{
+  "url": "https://docs.ag2.ai/docs/user-guide/ag-ui/channels",
+  "pinnedAt": "2026-09-28T08:02:19.519Z",
+  "codes": [
+    "Slack  ──►  CopilotKit Intelligence  ──►  channel process (Node)  ──►  AG2 server (AGUIStream)",
+    "npm install @copilotkit/channels @copilotkit/runtime @ag-ui/client tsx",
+    "import { createChannel } from \"@copilotkit/channels\";\nimport { CopilotRuntime, CopilotKitIntelligence } from \"@copilotkit/runtime/v2\";\nimport { createCopilotNodeListener } from \"@copilotkit/runtime/v2/node\";\nimport { HttpAgent } from \"@ag-ui/client\";\n\nconst required = (name: string) => {\n  const value = process.env[name];\n  if (!value) throw new Error(`Missing ${name}`);\n  return value;\n};\n\nconst channel = createChannel({\n  name: required(\"CHANNEL_CODE\"), // the Channel's Code from Intelligence\n  identifyUser: \"platform\",\n  // A fresh agent per conversation, pointed at your AG-UI endpoint.\n  agent: (threadId) => {\n    const agent = new HttpAgent({ url: \"http://localhost:8000/chat\" });\n    agent.threadId = threadId;\n    return agent;\n  },\n});\n\n// A mention subscribes the thread and runs the agent; afterwards every message\n// in a subscribed thread runs it without needing another mention.\nchannel.onMention(async ({ thread }) => {\n  await thread.subscribe();\n  await thread.runAgent();\n});\nchannel.onMessage(async ({ thread }) => {\n  if (await thread.isSubscribed()) await thread.runAgent();\n});\n\n// The runtime owns the channel's lifecycle: creating the listener starts it.\nconst runtime = new CopilotRuntime({\n  agents: {}, // the channel supplies its own agent; no web-facing agents needed\n  intelligence: new CopilotKitIntelligence({\n    apiKey: required(\"INTELLIGENCE_API_KEY\"),\n  }),\n  channels: [channel],\n});\n\nconst listener = createCopilotNodeListener({ runtime });\nawait listener.channels.ready({ timeoutMs: 15_000 }); // fail startup loudly on a broken config",
+    "uvicorn run_ag_ui:app --reload --port 8000   # terminal 1 — AG2 server",
+    "export INTELLIGENCE_API_KEY=\"cpk-...\"        # terminal 2 — channel process\nexport CHANNEL_CODE=\"support-bot\"            # the Channel's Code — not a Slack channel ID\nnpx tsx channel.mts"
+  ],
+  "headings": [
+    "h1 Channels",
+    "h2 How it fits together",
+    "h2 Build the channel process",
+    "h2 Slack",
+    "h2 Other platforms",
+    "h2 Next steps"
+  ],
+  "inline": [
+    "AGUIStream",
+    "AGUIStream",
+    "@copilotkit/channels",
+    "HttpAgent",
+    "@ag-ui/client",
+    "AGUIStream",
+    "name",
+    ".mts",
+    ".mts",
+    "package.json",
+    "ready()",
+    "RunAgentInput"
+  ]
+}

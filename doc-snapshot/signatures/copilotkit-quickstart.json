@@ -1,0 +1,50 @@
+{
+  "url": "https://docs.ag2.ai/docs/user-guide/ag-ui/copilotkit-quickstart",
+  "pinnedAt": "2026-09-28T08:02:19.520Z",
+  "codes": [
+    "npx copilotkit@latest create -f ag2",
+    "ag2-copilotkit-starter/\n├── agent-py/     # Python backend (AG2 agent + AG-UI endpoint)\n├── ui-react/     # React + CopilotKit frontend",
+    "cd agent-py\npip install -r requirements.txt\nexport OPENAI_API_KEY=\"your_openai_api_key\"\npython backend.py",
+    "cd ui-react\nnpm install\nnpm run dev",
+    "import { HttpAgent } from \"@ag-ui/client\";\nimport {\n  CopilotRuntime,\n  ExperimentalEmptyAdapter,\n  copilotRuntimeNextJSAppRouterEndpoint,\n} from \"@copilotkit/runtime\";\nimport { NextRequest } from \"next/server\";\n\nconst agent = new HttpAgent({ url: \"http://localhost:8008/chat\" });\n\nconst runtime = new CopilotRuntime({\n  agents: {\n    weather_agent: agent,\n  },\n});\n\nexport async function POST(req: NextRequest) {\n  const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({\n    runtime,\n    serviceAdapter: new ExperimentalEmptyAdapter(),\n    endpoint: \"/api/copilotkit\",\n  });\n  return handleRequest(req);\n}",
+    "import { CopilotKit } from \"@copilotkit/react-core\";\nimport \"@copilotkit/react-ui/styles.css\";\nimport \"./globals.css\";\n\nexport const metadata = {\n  title: \"AG2 Weather Agent\",\n  description: \"Weather agent powered by AG2 and CopilotKit\",\n};\n\nexport default function RootLayout({ children }: { children: React.ReactNode }) {\n  return (\n    <html lang=\"en\">\n      <body>\n        <CopilotKit agent=\"weather_agent\" runtimeUrl=\"/api/copilotkit\">\n          {children}\n        </CopilotKit>\n      </body>\n    </html>\n  );\n}",
+    "\"use client\";\n\nimport { CopilotChat } from \"@copilotkit/react-ui\";\nimport { useCopilotAction } from \"@copilotkit/react-core\";\n\nfunction WeatherCard({\n  location,\n  temperature,\n  feelsLike,\n  humidity,\n  windSpeed,\n  windGust,\n  conditions,\n  isLoading,\n}: {\n  location?: string;\n  temperature?: number;\n  feelsLike?: number;\n  humidity?: number;\n  windSpeed?: number;\n  windGust?: number;\n  conditions?: string;\n  isLoading: boolean;\n}) {\n  const tempF = temperature != null ? (temperature * 9 / 5 + 32).toFixed(1) : null;\n\n  return (\n    <div\n      className={`rounded-lg border border-sky-300 bg-gradient-to-br from-sky-100 to-blue-100 p-4 max-w-xs shadow-md ${isLoading ? \"animate-pulse\" : \"\"}`}\n    >\n      <h3 className=\"text-lg font-semibold text-sky-700\">\n        {location || \"Loading...\"}\n      </h3>\n      <p className=\"text-xs text-sky-500 uppercase tracking-wide mb-3\">\n        {isLoading ? \"Fetching weather...\" : \"Current Weather\"}\n      </p>\n\n      <div className=\"flex items-start justify-between mb-3\">\n        <div>\n          <div className=\"text-4xl font-bold text-gray-800\">\n            {temperature != null ? temperature : \"--\"}\n            <span className=\"text-lg text-sky-600\">&deg;C</span>\n          </div>\n          {tempF && <div className=\"text-sm text-gray-500\">{tempF}&deg;F</div>}\n        </div>\n        <div className=\"text-sm text-gray-500 text-right max-w-[120px]\">\n          {conditions || \"--\"}\n        </div>\n      </div>\n\n      <div className=\"grid grid-cols-3 gap-2 pt-3 border-t border-sky-200\">\n        <div className=\"text-center\">\n          <div className=\"text-[10px] text-gray-500 uppercase\">Humidity</div>\n          <div className=\"text-sm font-mono text-gray-800\">\n            {humidity != null ? `${humidity}%` : \"--%\"}\n          </div>\n        </div>\n        <div className=\"text-center\">\n          <div className=\"text-[10px] text-gray-500 uppercase\">Wind</div>\n          <div className=\"text-sm font-mono text-gray-800\">\n            {windSpeed != null ? `${windSpeed} km/h` : \"-- km/h\"}\n          </div>\n        </div>\n        <div className=\"text-center\">\n          <div className=\"text-[10px] text-gray-500 uppercase\">Feels Like</div>\n          <div className=\"text-sm font-mono text-gray-800\">\n            {feelsLike != null ? `${feelsLike}\\u00B0` : \"--\\u00B0\"}\n          </div>\n        </div>\n      </div>\n    </div>\n  );\n}\n\nexport default function Home() {\n  useCopilotAction({\n    name: \"get_weather\",\n    description: \"Get the weather for a given location.\",\n    available: \"disabled\",\n    parameters: [{ name: \"location\", type: \"string\", required: true }],\n    render: ({ args, status, result }) => {\n      if (status === \"complete\" && result) {\n        let data = result;\n        if (typeof result === \"string\") {\n          try {\n            data = JSON.parse(result.replace(/'/g, '\"'));\n          } catch {\n            return <div>{result}</div>;\n          }\n        }\n        return (\n          <WeatherCard\n            location={data.location}\n            temperature={data.temperature}\n            feelsLike={data.feelsLike}\n            humidity={data.humidity}\n            windSpeed={data.windSpeed}\n            windGust={data.windGust}\n            conditions={data.conditions}\n            isLoading={false}\n          />\n        );\n      }\n      return <WeatherCard location={args.location} isLoading={true} />;\n    },\n  });\n\n  return (\n    <div className=\"flex items-center justify-center min-h-screen bg-gradient-to-b from-sky-100 to-blue-200\">\n      <div className=\"w-full max-w-2xl h-[80vh] rounded-xl overflow-hidden shadow-2xl border border-sky-300\">\n        <CopilotChat\n          labels={{\n            title: \"AG2 Weather Agent\",\n            initial: \"Hi! Ask me about the weather in any city.\",\n            placeholder: \"Ask about the weather...\",\n          }}\n          className=\"h-full\"\n        />\n      </div>\n    </div>\n  );\n}"
+  ],
+  "headings": [
+    "h1 CopilotKit Quickstart",
+    "h2 What you'll build",
+    "h2 Prerequisites",
+    "h2 Quickstart",
+    "h2 1) Start the AG-UI backend",
+    "h2 2) Start the React + CopilotKit UI",
+    "h2 3) Connect CopilotKit runtime to the AG-UI endpoint",
+    "h2 4) Add the CopilotKit provider",
+    "h2 5) Render a chat UI",
+    "h2 Expected output",
+    "h2 Production notes",
+    "h2 Troubleshooting",
+    "h2 Security considerations",
+    "h2 Version and compatibility notes"
+  ],
+  "inline": [
+    "OPENAI_API_KEY",
+    "/chat",
+    "8008",
+    "http://localhost:8008/chat",
+    "http://localhost:3000",
+    "/api/copilotkit",
+    "CopilotRuntime",
+    "CopilotKit",
+    "<CopilotKit>",
+    "POST",
+    "OPTIONS",
+    "/api/copilotkit",
+    "/chat",
+    "blocked by CORS policy",
+    "Access-Control-Allow-Origin",
+    "Access-Control-Allow-Headers",
+    "Content-Type",
+    "text/event-stream",
+    "get_weather"
+  ]
+}

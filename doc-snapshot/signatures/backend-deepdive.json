@@ -1,0 +1,26 @@
+{
+  "url": "https://docs.ag2.ai/docs/user-guide/ag-ui/backend-deepdive",
+  "pinnedAt": "2026-09-28T08:02:19.518Z",
+  "codes": [
+    "from typing import Annotated\n\nfrom fastapi import FastAPI, Header, HTTPException\nfrom fastapi.responses import StreamingResponse\n\nfrom ag2 import Agent\nfrom ag2.ag_ui import AGUIStream, RunAgentInput\nfrom ag2.config import OpenAIConfig\n\nagent = Agent(\n    name=\"support_bot\",\n    prompt=\"You help users with billing questions.\",\n    config=OpenAIConfig(model=\"gpt-4o-mini\"),\n)\n\nstream = AGUIStream(agent)\napp = FastAPI()\n\n@app.post(\"/chat\")\nasync def run_agent(\n    message: RunAgentInput,\n    token: Annotated[str, Header(..., description=\"Authentication token\")],\n    accept: str | None = Header(None),\n) -> StreamingResponse:\n    if token != \"1234567890\":\n        raise HTTPException(status_code=401, detail=\"Invalid token\")\n\n    return StreamingResponse(\n        stream.dispatch(message, accept=accept),\n        media_type=accept or \"text/event-stream\",\n    )",
+    "from ag2 import Agent, Context, tool\nfrom ag2.ag_ui import AGUIStream, RunAgentInput\nfrom ag2.config import OpenAIConfig\n\n@tool\ndef get_user_profile(user_id: Context) -> str:\n    user_id = context.variables.get(\"user_id\")\n    return f\"User profile for user {user_id}\"\n\nagent = Agent(\n    name=\"profile_bot\",\n    prompt=\"You can look up a user profile when needed.\",\n    config=OpenAIConfig(model=\"gpt-4o-mini\"),\n    tools=[get_user_profile],\n)\n\nstream = AGUIStream(agent)\n\nasync def dispatch_with_context(message: RunAgentInput):\n    return stream.dispatch(message, variables={\"user_id\": \"1234567890\"})",
+    "from ag2 import Agent, tool\nfrom ag2.config import OpenAIConfig\n\n@tool\ndef calculate_sum(a: int, b: int) -> int:\n    \"\"\"Adds two numbers and returns the result.\"\"\"\n    return a + b\n\nagent = Agent(\n    name=\"calculator\",\n    tools=[calculate_sum],\n    config=OpenAIConfig(model=\"gpt-4o-mini\"),\n)"
+  ],
+  "headings": [
+    "h1 Backend deep dive",
+    "h2 Authentication",
+    "h2 Tools context",
+    "h2 Backend tools (Python functions)",
+    "h2 Frontend tools (UI-driven actions)",
+    "h2 See also"
+  ],
+  "inline": [
+    "/chat",
+    "/api/copilotkit",
+    "AGUIStream.build_asgi()",
+    "ContextVariables",
+    "context",
+    "functions=[...]",
+    "RunAgentInput.tools"
+  ]
+}

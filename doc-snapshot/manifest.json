@@ -1,35 +1,48 @@
 {
   "schema": 1,
   "docsRoot": "https://docs.ag2.ai/docs/user-guide/ag-ui",
-  "syncedAt": "2026-09-07T14:13:47.361426Z",
+  "syncedAt": "2026-09-28T08:02:19.521Z",
   "pages": {
     "https://docs.ag2.ai/docs/user-guide/ag-ui": {
       "file": "index.md",
       "sha256": "a8b91e6e8bd0a7d05347c5feae535e1427f60c9eeb89c4e3ea6925b9e226b686",
       "bytes": 8104,
       "lines": 197,
-      "status": "ok"
+      "status": "ok",
+      "signature": "signatures/index.json"
     },
     "https://docs.ag2.ai/docs/user-guide/ag-ui/copilotkit-quickstart": {
       "file": "copilotkit-quickstart.md",
       "sha256": "7804b8f1c5d4872e1ca4aa60e5c2cfb06cf5cd6a10cceece578f33a5f7b6a04b",
       "bytes": 8929,
       "lines": 292,
-      "status": "ok"
+      "status": "ok",
+      "signature": "signatures/copilotkit-quickstart.json"
     },
     "https://docs.ag2.ai/docs/user-guide/ag-ui/backend-deepdive": {
       "file": "backend-deepdive.md",
       "sha256": "ce782ba9af6fc926bcd68a97a778f718e00dd8a645b0380416185208f85049f4",
       "bytes": 5144,
       "lines": 136,
-      "status": "ok"
+      "status": "ok",
+      "signature": "signatures/backend-deepdive.json"
     },
     "https://docs.ag2.ai/docs/user-guide/ag-ui/channels": {
       "file": "channels.md",
       "sha256": "b83f787f9a4760c7b0e332ebcf330fd4684d45d4fdc5a9a17c71255621f03d78",
       "bytes": 7941,
       "lines": 123,
-      "status": "ok"
+      "status": "ok",
+      "signature": "signatures/channels.json"
     }
-  }
+  },
+  "watchedRepos": [
+    {
+      "repo": "ag2ai/ag2-copilotkit-starter",
+      "ref": "main",
+      "sha": "a56eabc0aa72bcd2b990f17303c081ff2d8181e8",
+      "why": "Findings 1 and 2 are about this starter's backend.py and requirements.txt. New commits may fix them -- re-run the starter before re-pinning.",
+      "pinnedAt": "2026-09-28T00:00:00Z"
+    }
+  ]
 }
