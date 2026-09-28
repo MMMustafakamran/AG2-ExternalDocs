@@ -29,8 +29,7 @@ const PAGES_CONFIG = path.join(RECORDER_DIR, 'config', 'pages.config.ts');
  * the dispatch form.
  */
 export const PAGE_GROUPS = {
-  // One group per page: the AG-UI section is four pages, so each gets its own
-  // dispatch checkbox rather than being bundled.
+  // One dispatch checkbox per page.
   ag_ui: ['ag-ui'],
   copilotkit_quickstart: ['copilotkit-quickstart'],
   backend_deepdive: ['backend-deepdive'],

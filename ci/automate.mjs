@@ -271,8 +271,6 @@ async function main() {
       }
       console.log('⚠️ --ignore-doc-drift provided. Proceeding anyway...\n');
     } else if (driftResult?.unknown) {
-      // Exit 3 territory: something was not read, so "all match" would be a
-      // claim about pages nobody checked.
       console.log('\n🚫 [Doc Drift Check] Could not verify everything:');
       for (const r of driftResult.unknownReasons) console.log(`   • ${r}`);
       if (!ignoreDocDrift) {
@@ -339,9 +337,7 @@ async function main() {
       console.log('\n▶ [Step] Backend already running; reusing it.');
     } else {
       console.log('\n▶ [Step] Starting Backend Server...');
-      // weather_backend.py, the same process `npm run agent` starts. The .env
-      // loaded above is inherited, so no --env-file is needed here (and CI has
-      // no .env file, only secrets in the environment).
+      // Inherits the .env loaded above; CI has no .env file.
       const backend = spawnServer('uv run python weather_backend.py', BACKEND_DIR, 'backend.log');
       backendProc = backend.proc;
       backendLog = backend.logPath;
