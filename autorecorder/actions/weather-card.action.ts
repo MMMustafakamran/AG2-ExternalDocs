@@ -48,20 +48,7 @@ export const runWeatherCardAction: PageActionHandler = async (
 ) => {
   console.log(`   [WeatherCard] Prompting: "${config.prompt}"`);
   const msgCount = await sendPrompt(page, config.prompt, { timeoutMs: 12_000 });
-  await finishWeatherCard(page, config, ctx, msgCount);
-};
 
-/**
- * Everything after the prompt is sent: rest on the card, wait for the reply,
- * then say whether the card mounted. Shared with the dropped-first-message
- * handler, which sends its own prompts.
- */
-export async function finishWeatherCard(
-  page: Page,
-  config: PageRecordConfig,
-  ctx: Parameters<PageActionHandler>[3],
-  msgCount: number,
-): Promise<void> {
   // The card mounts in its loading state as soon as the tool call starts, so it
   // is usually on screen well before the reply finishes. Resting the cursor on
   // it while it is still pulsing is the shot worth having.
@@ -122,4 +109,4 @@ export async function finishWeatherCard(
             `choice, not a documentation defect.`),
     );
   }
-}
+};
