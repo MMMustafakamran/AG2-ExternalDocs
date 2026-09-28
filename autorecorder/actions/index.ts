@@ -32,13 +32,16 @@ import { type ActionContext, type PageActionHandler, type PageRecordConfig } fro
 import { runStandardAction } from '../core/actions';
 import { type Page } from 'playwright';
 
+import { runDroppedFirstMessageAction } from './dropped-first-message.action';
 import { runWeatherCardAction } from './weather-card.action';
 
 /** Keys are page ids from `config/pages.config.ts`. Doctor flags any orphans. */
 export const ACTION_MAP: Record<string, PageActionHandler> = {
   // The only page that renders generative UI, and the only one where a
-  // streamed reply is not sufficient evidence.
-  'copilotkit-quickstart': runWeatherCardAction,
+  // streamed reply is not sufficient evidence. Also where the first message
+  // after a cold `next dev` can be silently dropped -- filmed as a finding
+  // when it happens, an ordinary card check when it does not.
+  'copilotkit-quickstart': runDroppedFirstMessageAction,
 
   // `backend-deepdive` is about the events behind that same card, so it gets
   // the same check rather than a prose-only one.
