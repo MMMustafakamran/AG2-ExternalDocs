@@ -64,9 +64,6 @@ const PAGE_DEFS: PageDefinition[] = [
       // `useCopilotAction` with `available: "disabled"` -- render-only. This is
       // the part that turns a tool result into the card.
       { filePath: 'frontend/src/app/quickstart/demo-chat/page.tsx', startLine: 92, endLine: 126 },
-      // The linked starter, which is the finding. Its two import lines are the
-      // whole story, so the range is tight around them.
-      { filePath: 'backend/starter-backend.py', startLine: 1, endLine: 20 },
     ],
 
     prompt: "What's the weather in Amsterdam?",
@@ -79,6 +76,8 @@ const PAGE_DEFS: PageDefinition[] = [
     docPath: 'backend-deepdive',
     route: 'quickstart',
 
+    // None of this page's snippets run in the project: no VS Code step.
+    showIde: false,
     ideFile: 'backend/weather_backend.py',
     // The tool the agent calls, which is what produces the TOOL_CALL_* events
     // this page is about.
@@ -98,6 +97,7 @@ const PAGE_DEFS: PageDefinition[] = [
     // Not implemented: Channels needs SLACK_BOT_TOKEN and SLACK_APP_TOKEN and a
     // Slack workspace to install into. The clip is the doc page plus the
     // endpoint it says can be reused -- which is the claim being checked.
+    showIde: false,
     ideFile: 'backend/weather_backend.py',
     startLine: 125,
     endLine: 148,
